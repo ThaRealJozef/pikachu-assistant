@@ -86,7 +86,7 @@ Before installation, ensure your system meets these requirements:
 | Component | Requirement | Download Link |
 |-----------|-------------|---------------|
 | **OS** | Windows 10/11 (64-bit) | - |
-| **Python** | 3.10 or newer | [python.org](https://www.python.org/downloads/) |
+| **Python** | 3.10 (strictly) | [python.org](https://www.python.org/downloads/) |
 | **Ollama** | Latest version | [ollama.com](https://ollama.com/) |
 | **Telegram** | Bot token (free) | [@BotFather](https://t.me/BotFather) |
 | **Disk Space** | ~6 GB for AI model | - |

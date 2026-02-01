@@ -6,7 +6,7 @@ Thank you to everyone who has contributed to the ⚡ **Pikachu Desktop Assistant
 
 ## 👑 Core Maintainer
 
-* **Suraj Kumar Sahoo** - *Initial Work & Architecture* - [@YourGithubUsername](https://github.com/YourGithubUsername)
+* **Suraj Kumar Sahoo** - *Initial Work & Architecture* - [@Surajkumar5050](https://github.com/Surajkumar5050)
 
 ---
 

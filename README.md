@@ -73,32 +73,31 @@ ZYRON isn't just another assistant - it's your personal AI that lives entirely o
 <table>
   <tr>
     <td width="50%">
-      <img src="collage1.png" alt="File Search & Battery Monitoring" width="100%">
+      <img src="markdown_themes/collage1.png" alt="File Search & Battery Monitoring" width="100%">
       <p align="center"><i>Smart file search and battery monitoring with code copying</i></p>
     </td>
     <td width="50%">
-      <img src="collage2.png" alt="System Activities & Storage" width="100%">
+      <img src="markdown_themes/collage2.png" alt="System Activities & Storage" width="100%">
       <p align="center"><i>Live browser tracking, app monitoring, and storage analysis</i></p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <img src="collage3.png" alt="Location & Camera Feed" width="100%">
+      <img src="markdown_themes/collage3.png" alt="Location & Camera Feed" width="100%">
       <p align="center"><i>Geolocation tracking and live camera feed access</i></p>
     </td>
     <td width="50%">
-      <img src="collage4.png" alt="Audio Recording & File System" width="100%">
+      <img src="markdown_themes/collage4.png" alt="Audio Recording & File System" width="100%">
       <p align="center"><i>Audio recording and intelligent file system navigation</i></p>
     </td>
   </tr>
   <tr>
     <td colspan="2" align="center">
-      <img src="collage5.png" alt="Screenshot & System Health" width="50%">
+      <img src="markdown_themes/collage5.png" alt="Screenshot & System Health" width="50%">
       <p align="center"><i>Screenshots and comprehensive system health monitoring</i></p>
     </td>
   </tr>
 </table>
-
 </div>
 
 ---

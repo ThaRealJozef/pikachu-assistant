@@ -8,7 +8,7 @@ engine.setProperty('rate', 170)
 
 # --- CONFIGURATION ---
 try:
-    from wake_word import WakeWordEngine
+from .wake_word import WakeWordEngine
     wake_engine = WakeWordEngine()
     HAS_OFFLINE_WAKE = True
 except Exception as e:
@@ -26,7 +26,7 @@ OFFLINE_MODE = os.getenv("OFFLINE_MODE", "false").lower() == "true"
 WAKE_WORDS = ["pikachu", "pika", "peek a", "pick a", "picacho", "hey you"]
 
 def speak(text):
-    print(f"⚡ Pikachu: {text}")
+    print(f"⚡ Zyron: {text}")
     try:
         engine.say(text)
         engine.runAndWait()

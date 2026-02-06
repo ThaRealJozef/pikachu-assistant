@@ -4,12 +4,12 @@ import os
 from dotenv import load_dotenv
 from telegram import Update, constants, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, CommandHandler, CallbackQueryHandler, filters
-from brain import process_command
-from muscles import execute_command, capture_webcam
-import memory
-import activity_monitor  # Needed to format the output text
-import clipboard_monitor  # For clipboard history
-import file_tracker  # <--- NEW IMPORT: THIS STARTS THE FILE TRACKER AUTOMATICALLY
+from zyron.core.brain import process_command
+from zyron.agents.system import execute_command, capture_webcam
+import zyron.core.memory as memory
+import zyron.features.activity as activity_monitor  # Needed to format the output text
+import zyron.features.clipboard as clipboard_monitor  # For clipboard history
+import zyron.features.files.tracker as file_tracker  # <--- NEW IMPORT: THIS STARTS THE FILE TRACKER AUTOMATICALLY
 
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -132,7 +132,7 @@ async def camera_monitor_loop(bot, chat_id):
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user.first_name
     await update.message.reply_text(
-        f"⚡ **Pikachu Online!**\nHello {user}. Use the buttons below.",
+        f"⚡ **Zyron Online!**\nHello {user}. Use the buttons below.",
         reply_markup=get_main_keyboard()
     )
 
@@ -156,7 +156,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         command_json = {"action": "check_battery"}
     elif "/systemhealth" in lower_text or "system health" in lower_text:
         command_json = {"action": "check_health"}
-    elif "/screenshot" in lower_text or "screenshot" in lower_text:
+    elif ("/screenshot" in lower_text or "screenshot" in lower_text) and not ("tab" in lower_text or "browser" in lower_text):
         command_json = {"action": "take_screenshot"}
     elif "/sleep" in lower_text:
         command_json = {"action": "system_sleep"}
@@ -554,6 +554,119 @@ Longitude: {location_data['longitude']}
                 print(f"Find file error: {e}")
                 await search_msg.edit_text(f"❌ Search error: {e}", reply_markup=get_main_keyboard())
         # ---------------------------------------------------------
+
+        # --- BROWSER CONTROL (Smart Tab Management) ---
+        elif action == "browser_control":
+            if status_msg: await status_msg.delete()
+            
+            command = command_json.get("command") # close, mute
+            query = command_json.get("query", "").lower()
+            
+            # Helper to find targets
+            import zyron.features.browser_control as browser_control
+            
+            # --- SMART MATCHING LOGIC ---
+            # 1. Get all open tabs
+            tabs = activity_monitor.get_firefox_tabs()
+            
+            if not tabs:
+                await update.message.reply_text("❌ No Firefox tabs found (or bridge not connected).", reply_markup=get_main_keyboard())
+                return
+
+            # 2. Tokenize the user query
+            # Remove command words to isolate the subject
+            stop_words = ["close", "mute", "unmute", "the", "tab", "window", "browser", "video", "music", "about", "play", "pause"]
+            query_words = [w for w in query.split() if w not in stop_words and len(w) > 2]
+            
+            if not query_words:
+                 await update.message.reply_text("❓ Please specify which tab (e.g., 'Close YouTube').", reply_markup=get_main_keyboard())
+                 return
+
+            # 3. Score each tab
+            best_match = None
+            highest_score = 0
+            
+            print(f"🔍 Searching tabs for keywords: {query_words}")
+            
+            for tab in tabs:
+                score = 0
+                title = tab.get('title', '').lower()
+                url = tab.get('url', '').lower()
+                
+                # Check each word
+                for word in query_words:
+                    if word in title: score += 2  # Title match is strong
+                    elif word in url: score += 1  # URL match is weak
+                
+                # Bonus for exact phrase
+                if " ".join(query_words) in title:
+                    score += 5
+                
+                print(f"   - Checking: {title[:20]}... Score: {score}")
+                
+                if score > highest_score:
+                    highest_score = score
+                    best_match = tab
+            
+            # 4. Execute on best match if score is sufficient
+            if best_match and highest_score > 0:
+                tab_id = best_match.get('id')
+                tab_title = best_match.get('title')
+                
+                # Save Context for "Play it again"
+                from zyron.core import memory
+                memory.update_context("browser_interaction", tab_title)
+                
+                if tab_id:
+                    if command == "close":
+                        browser_control.close_tab(tab_id)
+                        await update.message.reply_text(f"🗑️ Closed: **{best_match.get('title')}**", parse_mode='Markdown', reply_markup=get_main_keyboard())
+                    elif command == "mute":
+                        browser_control.mute_tab(tab_id, True)
+                        await update.message.reply_text(f"🔇 Muted: **{best_match.get('title')}**", parse_mode='Markdown', reply_markup=get_main_keyboard())
+                    elif command == "unmute": # handle unmute if we add it later
+                        browser_control.mute_tab(tab_id, False)
+                        await update.message.reply_text(f"🔊 Unmuted: **{best_match.get('title')}**", parse_mode='Markdown', reply_markup=get_main_keyboard())
+                    elif command == "play" or command == "pause":
+                        browser_control.media_control(tab_id, command)
+                        icon = "▶️" if command == "play" else "⏸️"
+                        await update.message.reply_text(f"{icon} {command.title()}d: **{best_match.get('title')}**", parse_mode='Markdown', reply_markup=get_main_keyboard())
+                    
+                    elif command == "screenshot":
+                        window_id = best_match.get('windowId')
+                        browser_control.capture_tab_with_window(tab_id, window_id)
+                        
+                        loader = await update.message.reply_text("📸 Capturing tab...", reply_markup=get_main_keyboard())
+                        
+                        # Wait for file
+                        shot_path = os.path.join(os.environ.get('TEMP', ''), 'zyron_tab_screenshot.png')
+                        
+                        # Remove old file if exists to avoid sending stale one
+                        if os.path.exists(shot_path):
+                            try: os.remove(shot_path)
+                            except: pass
+                            
+                        # Poll for new file
+                        found = False
+                        for _ in range(10): # Wait up to 5 seconds
+                            if os.path.exists(shot_path):
+                                found = True
+                                break
+                            await asyncio.sleep(0.5)
+                        
+                        if found:
+                            try:
+                                await update.message.reply_photo(photo=open(shot_path, 'rb'), caption=f"📸 **{best_match.get('title')}**")
+                                await loader.delete()
+                            except Exception as e:
+                                await loader.edit_text(f"❌ Upload Error: {e}")
+                        else:
+                            await loader.edit_text("❌ Screenshot timeout. Native host didn't respond.")
+                            
+                else:
+                    await update.message.reply_text(f"❌ Found '**{best_match.get('title', 'Unknown')}**' but it has no ID. Reload extension.", reply_markup=get_main_keyboard())
+            else:
+                 await update.message.reply_text(f"❌ No tab found matching your description.", reply_markup=get_main_keyboard())
 
         else:
             # Generic action execution

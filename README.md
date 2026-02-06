@@ -150,15 +150,15 @@ ZYRON isn't just another assistant - it's your personal AI that lives entirely o
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Surajkumar5050/pikachu-assistant.git
-cd pikachu-assistant
+git clone https://github.com/Surajkumar5050/zyron-assistant.git
+cd zyron-assistant
 
 # 2. Run the automated installer
 setup.bat
 
 # That's it! The installer handles:
-# ✓ Python environment setup
-# ✓ All dependencies
+# ✓ Python environment setup (Python 3.9+)
+# ✓ Package installation (pip install -e .)
 # ✓ AI model download (qwen2.5-coder:7b)
 # ✓ Windows startup integration
 # ✓ Stealth mode configuration
@@ -180,7 +180,7 @@ LOG_LEVEL=INFO
 
 ```bash
 # Visible mode (for testing)
-python main.py
+start_zyron.bat
 
 # Stealth mode (runs in background)
 run_silent.vbs
@@ -232,17 +232,24 @@ run_silent.vbs
 ```
 zyron-assistant/
 │
-├── main.py                    # Application entry point
-├── brain.py                   # AI inference engine (Ollama integration)
-├── listener.py                # Voice wake word detection system
-├── wake_word.py               # Offline Wake Word Engine (Vosk)
-├── tele_agent.py              # Telegram bot handler
-├── muscles.py                 # System automation controller
-├── memory.py                  # Conversation context manager
-├── activity_monitor.py        # Browser & application tracking
-├── file_finder.py             # Intelligent file search engine
-├── file_tracker.py            # File activity logging system
-├── clipboard_monitor.py       # Clipboard history manager
+├── src/
+│   └── zyron/
+│       ├── main.py                    # Application entry point
+│       ├── core/                      # Core System Modules
+│       │   ├── brain.py               # AI inference engine
+│       │   ├── voice.py               # Voice input/output
+│       │   ├── wake_word.py           # Offline Wake Word (Vosk)
+│       │   └── memory.py              # Context manager
+│       ├── agents/                    # Autonomous Agents
+│       │   ├── system.py              # System automation (muscles)
+│       │   └── telegram.py            # Telegram bot handler
+│       └── features/                  # Feature Modules
+│           ├── activity.py            # App & Browser monitoring
+│           ├── clipboard.py           # Clipboard history
+│           └── files/                 # File System Intelligence
+│               ├── finder.py          # Smart search engine
+│               └── tracker.py         # File activity logger
+│
 │
 ├── browser_extension/         # Chrome extension for tab monitoring
 │   ├── manifest.json
@@ -280,8 +287,7 @@ zyron-assistant/
 │
 ├── setup.bat                  # Automated installer
 ├── run_silent.vbs             # Stealth mode launcher
-├── start_pikachu.bat          # Standard launcher
-├── requirements.txt           # Python dependencies
+├── start_zyron.bat            # Standard launcher
 ├── .env                       # Environment configuration (create this)
 ├── .gitignore                 # Git ignore rules
 ├── README.md                  # This file
@@ -336,25 +342,29 @@ Just describe what you're looking for:
 
 ## Advanced Setup
 
-### Browser Activity Monitoring
+### Browser Activity Monitoring (Advanced)
 
-For complete browser tab tracking with URLs:
+For the full experience (Screenshots, Tab Control, Media Control):
 
-1. Navigate to your browser's extension page:
-   - Chrome: `chrome://extensions`
-   - Brave: `brave://extensions`
-   - Edge: `edge://extensions`
-   - Firefox: `about:debugging#/runtime/this-firefox`
+1.  **Register the Native Host**:
+    ```bash
+    python src/zyron/scripts/register_native_host.py
+    ```
+    *(This connects Zyron directly to Firefox securely on your machine)*
 
-2. Enable "Developer mode" (or "Load Temporary Add-on" for Firefox)
+2.  **Load the Extension**:
+    - **Firefox**: `about:debugging` -> "This Firefox" -> "Load Temporary Add-on" -> Select `firefox_extension/manifest.json`.
+    - **Chrome**: Coming soon!
 
-3. Click "Load unpacked" (Chrome) or "Load Temporary Add-on" (Firefox) and select:
-   - Chrome/Edge: `browser_extension/manifest.json`
-   - Firefox: `firefox_extension/manifest.json`
+Now Zyron (v1.4) can "see" and "control" your browser in real-time.
 
-4. Pin the extension to your toolbar
+---
 
-Now ZYRON can see your active tabs and URLs in real-time!
+### Advanced Browser Control (New v1.4) 🦊
+- **Smart Logic** - "Close it" knows you mean the YouTube tab you just watched.
+- **Ranked Matching** - "Mute Spotify" finds the exact tab instantly.
+- **Media Control** - Play/Pause/Next directly from Telegram (no need to open the tab).
+- **Tab Capture** - High-quality screenshots of specific tabs (background capture supported).
 
 ---
 
@@ -392,10 +402,10 @@ We love contributions! Here's how:
 
 ### Development Setup
 ```bash
-git clone https://github.com/Surajkumar5050/pikachu-assistant.git
-cd pikachu-assistant
+git clone https://github.com/Surajkumar5050/zyron-assistant.git
+cd zyron-assistant
 git checkout -b dev
-pip install -r requirements-dev.txt
+pip install -e .
 pytest tests/
 ```
 
@@ -426,9 +436,9 @@ Built with amazing open-source tools:
 
 ## Support & Community
 
-- **Documentation**: [Full Wiki](https://github.com/Surajkumar5050/pikachu-assistant/tree/main/docs)
-- **Bug Reports**: [Issue Tracker](https://github.com/Surajkumar5050/pikachu-assistant/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Surajkumar5050/pikachu-assistant/discussions)
+- **Documentation**: [Full Wiki](https://github.com/Surajkumar5050/zyron-assistant/tree/main/docs)
+- **Bug Reports**: [Issue Tracker](https://github.com/Surajkumar5050/zyron-assistant/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Surajkumar5050/zyron-assistant/discussions)
 
 ---
 

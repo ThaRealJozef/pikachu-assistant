@@ -1,13 +1,13 @@
 import time
-from listener import listen_for_command, take_user_input, speak
-from brain import process_command
-from muscles import execute_command
+from .core.voice import listen_for_command, take_user_input, speak
+from .core.brain import process_command
+from .agents.system import execute_command
 
 # Import file tracker - it will auto-start when imported
-import file_tracker
+import zyron.features.files.tracker as file_tracker
 
 def main():
-    print("⚡ SYSTEM ONLINE: Say 'Hey Pikachu' to start...")
+    print("⚡ ZYRON ONLINE: Say 'Hey Pikachu' to start...")
     
     while True:
     

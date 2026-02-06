@@ -150,15 +150,15 @@ ZYRON isn't just another assistant - it's your personal AI that lives entirely o
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Surajkumar5050/pikachu-assistant.git
-cd pikachu-assistant
+git clone https://github.com/Surajkumar5050/zyron-assistant.git
+cd zyron-assistant
 
 # 2. Run the automated installer
 setup.bat
 
 # That's it! The installer handles:
-# ✓ Python environment setup
-# ✓ All dependencies
+# ✓ Python environment setup (Python 3.9+)
+# ✓ Package installation (pip install -e .)
 # ✓ AI model download (qwen2.5-coder:7b)
 # ✓ Windows startup integration
 # ✓ Stealth mode configuration
@@ -180,7 +180,7 @@ LOG_LEVEL=INFO
 
 ```bash
 # Visible mode (for testing)
-python main.py
+start_zyron.bat
 
 # Stealth mode (runs in background)
 run_silent.vbs
@@ -232,17 +232,23 @@ run_silent.vbs
 ```
 zyron-assistant/
 │
-├── main.py                    # Application entry point
-├── brain.py                   # AI inference engine (Ollama integration)
-├── listener.py                # Voice wake word detection system
-├── wake_word.py               # Offline Wake Word Engine (Vosk)
-├── tele_agent.py              # Telegram bot handler
-├── muscles.py                 # System automation controller
-├── memory.py                  # Conversation context manager
-├── activity_monitor.py        # Browser & application tracking
-├── file_finder.py             # Intelligent file search engine
-├── file_tracker.py            # File activity logging system
-├── clipboard_monitor.py       # Clipboard history manager
+├── src/
+│   └── zyron/
+│       ├── main.py                    # Application entry point
+│       ├── core/                      # Core System Modules
+│       │   ├── brain.py               # AI inference engine
+│       │   ├── voice.py               # Voice input/output
+│       │   ├── wake_word.py           # Offline Wake Word (Vosk)
+│       │   └── memory.py              # Context manager
+│       ├── agents/                    # Autonomous Agents
+│       │   ├── system.py              # System automation (muscles)
+│       │   └── telegram.py            # Telegram bot handler
+│       └── features/                  # Feature Modules
+│           ├── activity.py            # App & Browser monitoring
+│           ├── clipboard.py           # Clipboard history
+│           └── files/                 # File System Intelligence
+│               ├── finder.py          # Smart search engine
+│               └── tracker.py         # File activity logger
 │
 ├── browser_extension/         # Chrome extension for tab monitoring
 │   ├── manifest.json
@@ -280,8 +286,7 @@ zyron-assistant/
 │
 ├── setup.bat                  # Automated installer
 ├── run_silent.vbs             # Stealth mode launcher
-├── start_pikachu.bat          # Standard launcher
-├── requirements.txt           # Python dependencies
+├── start_zyron.bat            # Standard launcher
 ├── .env                       # Environment configuration (create this)
 ├── .gitignore                 # Git ignore rules
 ├── README.md                  # This file
@@ -392,10 +397,10 @@ We love contributions! Here's how:
 
 ### Development Setup
 ```bash
-git clone https://github.com/Surajkumar5050/pikachu-assistant.git
-cd pikachu-assistant
+git clone https://github.com/Surajkumar5050/zyron-assistant.git
+cd zyron-assistant
 git checkout -b dev
-pip install -r requirements-dev.txt
+pip install -e .
 pytest tests/
 ```
 
@@ -426,9 +431,9 @@ Built with amazing open-source tools:
 
 ## Support & Community
 
-- **Documentation**: [Full Wiki](https://github.com/Surajkumar5050/pikachu-assistant/tree/main/docs)
-- **Bug Reports**: [Issue Tracker](https://github.com/Surajkumar5050/pikachu-assistant/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Surajkumar5050/pikachu-assistant/discussions)
+- **Documentation**: [Full Wiki](https://github.com/Surajkumar5050/zyron-assistant/tree/main/docs)
+- **Bug Reports**: [Issue Tracker](https://github.com/Surajkumar5050/zyron-assistant/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Surajkumar5050/zyron-assistant/discussions)
 
 ---
 

@@ -10,9 +10,9 @@ from scipy.io.wavfile import write
 import numpy as np
 import requests
 import json
-import activity_monitor
-import clipboard_monitor
-import file_finder  # Uses the new smart finder we just created
+import zyron.features.activity as activity_monitor
+import zyron.features.clipboard as clipboard_monitor
+import zyron.features.files.finder as file_finder  # Uses the new smart finder we just created
 
 PROCESS_NAMES = {
     # Browsers

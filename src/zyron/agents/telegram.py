@@ -4,12 +4,12 @@ import os
 from dotenv import load_dotenv
 from telegram import Update, constants, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, CommandHandler, CallbackQueryHandler, filters
-from brain import process_command
-from muscles import execute_command, capture_webcam
-import memory
-import activity_monitor  # Needed to format the output text
-import clipboard_monitor  # For clipboard history
-import file_tracker  # <--- NEW IMPORT: THIS STARTS THE FILE TRACKER AUTOMATICALLY
+from zyron.core.brain import process_command
+from zyron.agents.system import execute_command, capture_webcam
+import zyron.core.memory as memory
+import zyron.features.activity as activity_monitor  # Needed to format the output text
+import zyron.features.clipboard as clipboard_monitor  # For clipboard history
+import zyron.features.files.tracker as file_tracker  # <--- NEW IMPORT: THIS STARTS THE FILE TRACKER AUTOMATICALLY
 
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -132,7 +132,7 @@ async def camera_monitor_loop(bot, chat_id):
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user.first_name
     await update.message.reply_text(
-        f"⚡ **Pikachu Online!**\nHello {user}. Use the buttons below.",
+        f"⚡ **Zyron Online!**\nHello {user}. Use the buttons below.",
         reply_markup=get_main_keyboard()
     )
 

@@ -2,7 +2,7 @@ import ollama
 import json
 import os
 from dotenv import load_dotenv
-from memory import get_context_string
+from .memory import get_context_string
 
 
 load_dotenv()

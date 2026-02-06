@@ -79,7 +79,7 @@ echo.
 echo   [3/6] Installing Libraries...
 call venv\Scripts\activate
 python -m pip install --upgrade pip --quiet
-pip install -r requirements.txt
+pip install -e .
 
 if errorlevel 1 (
     color 0C

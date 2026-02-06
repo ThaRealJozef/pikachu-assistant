@@ -1,6 +1,6 @@
 @echo off
-title Pikachu Agent
-echo ⚡ Starting Pikachu System...
+title Zyron Agent
+echo ⚡ Starting Zyron System...
 
 :: Check if venv exists
 if not exist venv (
@@ -12,5 +12,5 @@ if not exist venv (
 :: Activate and Run
 call venv\Scripts\activate
 echo 🤖 Bot is active. Press Ctrl+C to stop.
-python tele_agent.py
+python -m zyron.agents.telegram
 pause

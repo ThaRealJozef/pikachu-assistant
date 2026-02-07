@@ -40,22 +40,15 @@ If you have contributed to the project, please open a Pull Request to add your n
 
 > Community growth as of February 2026
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <b>Contributor Visualizer</b><br><br>
-      <a href="https://github.com/Surajkumar5050/zyron-assistant/graphs/contributors">
-        <img src="https://contrib.rocks/image?repo=Surajkumar5050/zyron-assistant" />
-      </a>
-    </td>
-    <td align="center" width="50%">
-      <b>Growth Trajectory</b><br><br>
-      <a href="https://star-history.com/#Surajkumar5050/zyron-assistant&Date">
-        <img src="https://api.star-history.com/svg?repos=Surajkumar5050/zyron-assistant&type=Date" />
-      </a>
-    </td>
-  </tr>
-</table>
+<table> <tr> <td align="center" width="50%"> <b>Contributor Visualizer</b>
+
+
+
+<a href="https://github.com/Surajkumar5050/zyron-assistant/graphs/contributors"> <img src="https://contrib.rocks/image?repo=Surajkumar5050/zyron-assistant&cache=1" /> </a> </td> <td align="center" width="50%"> <b>Growth Trajectory</b>
+
+
+
+<a href="https://star-history.com/#Surajkumar5050/zyron-assistant&Date"> <img src="https://api.star-history.com/svg?repos=Surajkumar5050/zyron-assistant&type=Date" /> </a> </td> </tr> </table>
 
 * **Total Contributors:** 2
 * **Active Pull Requests:** [View List](https://github.com/Surajkumar5050/zyron-assistant/pulls)

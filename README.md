@@ -205,13 +205,20 @@ run_silent.vbs
 ```
 /activities - See running apps and browser tabs
 /screenshot - Capture your screen
-/battery - Check battery status
+/batterypercentage - Check current battery percentage + charging / discharging status
+/systemhealth - View CPU, RAM, and system performance status
 /storage - View disk space across all drives
 /location - Get current location
 /recordaudio - Record 10 seconds of audio
 /camera_on - Start camera feed
+/camera_off - Stop camera feed
 /sleep - Put PC to sleep
-/copied_texts - View clipboard history
+/restart - Restart the system
+/shutdown - Shut down the system
+/clear_bin - Empty recycle bin
+/copied_texts - View top 20 clipboard history
+/focus_mode_on - Enable focus mode (do not disturb)
+/blacklist - Manage blocked apps, sites for focus mode
 ```
 
 ### Natural Language (Both Voice & Text)

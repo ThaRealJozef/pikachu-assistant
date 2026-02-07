@@ -194,7 +194,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
         else:
             await update.message.reply_text(
-                "🎙️ **Audio Recording**\n\nPlease specify a duration:\n• `/recordaudio 10s` (10 seconds)\n• `/recordaudio 2m` (2 minutes)\n\n*Maximum: 1 hour*", 
+                "🎙️ **Audio Recording**\n\nPlease specify your desired duration. For example:\n• `/recordaudio 10s` (for 10 seconds)\n• `/recordaudio 2m` (for 2 minutes)\n\n*Maximum duration is 1 hour.*", 
                 parse_mode='Markdown',
                 reply_markup=get_main_keyboard()
             )

@@ -23,3 +23,9 @@ audio_recording.wav
 *.png
 *.zip
 *.xpi
+
+# Local Agent Data (Machine-specific)
+.agents/
+
+# Generated Media (Don't upload screenshots/recordings)
+saved_media/

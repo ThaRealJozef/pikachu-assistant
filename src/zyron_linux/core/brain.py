@@ -1,20 +1,17 @@
 import ollama
 import json
+import os
+from dotenv import load_dotenv
 from .memory import get_context_string
-from src.zyron.utils.settings import settings
+
+
+load_dotenv()
+MODEL_NAME = os.getenv("MODEL_NAME", "qwen2.5-coder:3b")
 
 
 BASE_SYSTEM_PROMPT = """
 You are Zyron, a smart laptop assistant with memory.
 Your ONLY output must be valid JSON.
-
-*** CORE CLASSIFICATION RULES ***
-1. ACTION COMMAND: If the user wants you to DO something on the laptop (open/close apps, files, browser tabs, screenshots, check battery/health, etc.).
-2. WEB RESEARCH: If the user asks a QUESTION about facts, people, prices, or current events (e.g. "Who is Sam Altman?", "Bitcoin price").
-3. GENERAL CHAT: Only for greetings, simple conversation, or if no other action fits.
-
-If the request is a QUESTION requiring a search, ALWAYS use "web_research".
-If the request is an instruction to OPERATE the computer, use the specific ACTION command.
 
 COMMANDS:
 1. Camera: {"action": "camera_stream", "value": "on/off"}
@@ -66,57 +63,12 @@ COMMANDS:
 
 16. Chat:  {"action": "general_chat", "response": "text"}
 
-*** PRIORITY RULE: "CLICK ON X" ***
-If user says "click on [something]", "press [something]", or "tap [something]":
-ALWAYS use browser_nav with sub_action="click", NOT browser_control!
-- "click on music" -> {"action": "browser_nav", "sub_action": "click", "target": "music"}
-- "click on login" -> {"action": "browser_nav", "sub_action": "click", "target": "login"}
-browser_control is ONLY for "close TAB", "mute TAB" - actual tab operations!
-
-17. Browser Tab Control: {"action": "browser_control", "command": "close/mute", "query": "which tab"}
-    (Triggers: "close youtube TAB", "mute spotify TAB", "close the TAB")
-    *** ONLY when user explicitly says "TAB" or "close/mute" ***
+17. Browser Control: {"action": "browser_control", "command": "close/mute", "query": "which tab"}
+    (Triggers: "close youtube tab", "mute spotify", "close the video about AI")
 
 18. Power Control: 
     - Shutdown: {"action": "shutdown_pc"} (Triggers: shutdown, turn off computer, kill power)
     - Restart:  {"action": "restart_pc"}  (Triggers: restart, reboot, cycle power)
-
-19. Browser Page Interaction: {"action": "browser_nav", "sub_action": "read/scroll/click/type/scan", ...}
-    *** Use this for interacting with CONTENT ON THE PAGE (buttons, links, forms) ***
-    - Read page: {"action": "browser_nav", "sub_action": "read"}
-    - Scroll:    {"action": "browser_nav", "sub_action": "scroll", "direction": "down/up/top/bottom"}
-    - Click button/link: {"action": "browser_nav", "sub_action": "click", "target": "button text"}
-    - Type in field:     {"action": "browser_nav", "sub_action": "type", "target": "field name", "text": "what to type"}
-    (Triggers: "click on X", "click the button", "scroll down", "type Y in search", "read page")
-    Examples:
-    - "click on shorts" -> {"action": "browser_nav", "sub_action": "click", "target": "shorts"}
-    - "click the login button" -> {"action": "browser_nav", "sub_action": "click", "target": "login"}
-
-20. Web Research: {"action": "web_research", "query": "search query"}
-    (Triggers: "Who is...", "What is...", "How much is...", "Look up...", "Research...", "Find info about...")
-    *** Use this when the user asks a QUESTION that requires browsing the web ***
-
-*** MULTI-COMMAND CHAINING ***
-If the user wants MULTIPLE actions in sequence, return a JSON ARRAY of actions.
-Keywords like "and then", "then", "after that", "also" indicate chaining.
-
-Example 1: "Go to Google and search Pikachu"
-[
-  {"action": "open_url", "url": "https://google.com", "browser": "default"},
-  {"action": "browser_nav", "sub_action": "type", "target": "search", "text": "Pikachu"}
-]
-
-Example 2: "Screenshot my YouTube tab and then mute it"
-[
-  {"action": "take_screenshot"},
-  {"action": "browser_control", "command": "mute", "query": "youtube"}
-]
-
-Example 3: "Open Notepad and type Hello World"
-[
-  {"action": "open_app", "app_name": "notepad"},
-  {"action": "browser_nav", "sub_action": "type", "target": "notepad", "text": "Hello World"}
-]
 
 *** CRITICAL RULE: CONTEXT AWARENESS ***
 Use the [CURRENT CONTEXT STATE] below to resolve words like "it", "that", "the app", "the folder".
@@ -135,7 +87,7 @@ def process_command(user_input):
     
     try:
         response = ollama.chat(
-            model=settings.MODEL_NAME, 
+            model=MODEL_NAME, 
             messages=[
                 {'role': 'system', 'content': full_prompt},
                 {'role': 'user', 'content': user_input},
@@ -241,25 +193,8 @@ def process_command(user_input):
             if found_path:
                 data = {"action": "send_file", "path": found_path}
 
-        # 12. Force Web Research
-        research_triggers = ["who is", "what is", "how much", "tell me about", "look up", "research", "search for", "find info", "is there", "are there"]
-        is_question_str = any(lower.startswith(t) for t in ["who", "what", "how", "where", "why", "when", "is ", "are ", "tell me", "can you find"])
-        is_actual_question = lower.endswith("?") or is_question_str
-        
-        # Only override if it's currently general chat or a weak match
-        # AND it doesn't look like a system command (e.g. "What's my battery")
-        system_keywords = ["battery", "health", "cpu", "ram", "storage", "recycle", "clipboard", "copied", "screenshot", "activities", "open", "close"]
-        looks_like_system = any(k in lower for k in system_keywords)
-
-        current_action = data[0].get("action") if isinstance(data, list) else data.get("action")
-        if (is_actual_question or any(t in lower for t in research_triggers)) and current_action == "general_chat" and not looks_like_system:
-            data = {"action": "web_research", "query": user_input}
-
-        # Normalize to list for multi-command support
-        if isinstance(data, list):
-            return data
-        return [data]
+        return data
 
     except Exception as e:
         print(f"Error: {e}")
-        return [{"action": "general_chat", "response": "I had a brain glitch."}]
+        return {"action": "general_chat", "response": "I had a brain glitch."}

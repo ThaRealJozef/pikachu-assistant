@@ -10,12 +10,9 @@ from scipy.io.wavfile import write
 import numpy as np
 import requests
 import json
-import zyron.features.activity as activity_monitor
-import zyron.features.clipboard as clipboard_monitor
-import zyron.features.files.finder as file_finder  # Uses the new smart finder we just created
-import zyron.agents.researcher as researcher
-from src.zyron.utils.settings import settings
-from datetime import datetime
+import zyron_linux.features.activity as activity_monitor
+import zyron_linux.features.clipboard as clipboard_monitor
+# import zyron_linux.features.files.finder as file_finder  # Uses the new smart finder we just created
 
 PROCESS_NAMES = {
     # Browsers
@@ -217,8 +214,7 @@ def capture_webcam():
             if cam.isOpened():
                 ret, frame = cam.read()
                 if ret:
-                    os.makedirs(settings.MEDIA_PATH, exist_ok=True)
-                    file_path = os.path.join(os.getcwd(), f"{settings.MEDIA_PATH}/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_webcam_snap.jpg")
+                    file_path = os.path.join(os.getcwd(), "webcam_snap.jpg")
                     cv2.imwrite(file_path, frame)
                     cam.release()
                     return file_path
@@ -231,8 +227,7 @@ def capture_webcam():
 
 
 def capture_screen():
-    os.makedirs(settings.MEDIA_PATH, exist_ok=True)
-    file_path = os.path.join(os.getcwd(), f"{settings.MEDIA_PATH}/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_screenshot.png")
+    file_path = os.path.join(os.getcwd(), "screenshot.png")
     try:
         print("📸 Taking screenshot...")
         screenshot = pyautogui.screenshot()
@@ -246,8 +241,7 @@ def capture_screen():
 def record_audio(duration=10):
     """Records audio from the default microphone for specified duration (in seconds).
     Uses sounddevice library - Works on Windows Python 3.10 without C++ compiler!"""
-    os.makedirs(settings.MEDIA_PATH, exist_ok=True)
-    file_path = os.path.join(os.getcwd(), f"{settings.MEDIA_PATH}/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_audio_recording.wav")
+    file_path = os.path.join(os.getcwd(), "audio_recording.wav")
     
     # Audio recording parameters
     SAMPLE_RATE = 44100 
@@ -280,19 +274,19 @@ def record_audio(duration=10):
 
 def system_sleep():
     print("💤 Going to sleep...")
-    os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+    os.system("systemctl suspend")
 
 def shutdown_pc():
     """Immediately shuts down the computer."""
     print("🔌 System Shutdown Initiated...")
     # /s = shutdown, /t 0 = time 0 seconds
-    os.system("shutdown /s /t 0")
+    os.system("systemctl poweroff")
 
 def restart_pc():
     """Immediately restarts the computer."""
     print("🔄 System Restart Initiated...")
     # /r = restart, /t 0 = time 0 seconds
-    os.system("shutdown /r /t 0")
+    os.system("systemctl reboot")
 
 
 def get_battery_status():
@@ -657,23 +651,6 @@ def system_panic():
 
 
 def execute_command(cmd_json):
-    """
-    Main dispatcher for Zyron commands.
-    Supports single dict or list of dicts (chaining).
-    """
-    if not cmd_json: return
-    
-    if isinstance(cmd_json, list):
-        results = []
-        for cmd in cmd_json:
-            res = _single_execute(cmd)
-            if res and isinstance(res, str):
-                results.append(res)
-        return " ".join(results) if results else "Done."
-    
-    return _single_execute(cmd_json)
-
-def _single_execute(cmd_json):
     if not cmd_json: return
     action = cmd_json.get("action")
     
@@ -718,9 +695,3 @@ def _single_execute(cmd_json):
 
     elif action == "find_file":
         return execute_find_file(cmd_json)
-
-    elif action == "web_research":
-        return researcher.perform_research(cmd_json.get("query"))
-
-    elif action == "general_chat":
-        return cmd_json.get("response")

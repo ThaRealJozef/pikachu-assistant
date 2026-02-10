@@ -17,9 +17,9 @@ except ImportError:
     HAS_WIN32 = False
 
 # Configuration
-CHECK_INTERVAL_SECONDS = 5   # Check every 5 seconds for testing
-RAM_THRESHOLD_MB = 500       # Keep 500 MB (manual test allocates 600)
-IDLE_THRESHOLD_SECONDS = 10  # 10 seconds for testing
+CHECK_INTERVAL_SECONDS = 60    # Check every minute
+RAM_THRESHOLD_MB = 500         # Apps > 500 MB
+IDLE_THRESHOLD_SECONDS = 10800 # 3 Hours (3 * 60 * 60)
 
 # State
 last_active_timestamps = {}  # {proc_name: timestamp}
@@ -97,10 +97,10 @@ def get_zombies():
     zombies = []
     current_time = time.time()
     
-    # 1. Update activity for current app first
+    # Update current app activity
     track_foreground_window()
     
-    # 2. Scan all processes
+    # Scan all processes
     for proc in psutil.process_iter(['pid', 'name', 'memory_info']):
         try:
             pinfo = proc.info
@@ -108,24 +108,19 @@ def get_zombies():
             pid = pinfo['pid']
             mem_mb = pinfo['memory_info'].rss / (1024 * 1024)
             
-            # Skip whitelisted or system apps (basic filter)
+            # Skip whitelisted or system apps
             if name.lower() in [x.lower() for x in whitelist]:
                 continue
             
-            # Skip critical system processes (simple hardcoded list for safety)
+            # Skip critical system processes
             if name.lower() in ['explorer.exe', 'start_zyron.bat', 'python.exe', 'cmd.exe', 'svchost.exe', 'system', 'registry', 'smss.exe', 'csrss.exe', 'wininit.exe', 'services.exe', 'lsass.exe']:
                 continue
 
             # Check Thresholds
             if mem_mb > RAM_THRESHOLD_MB:
                 # Check idle time
-                last_active = last_active_timestamps.get(name.lower(), current_time) # Default to now if never seen (conservative)
+                last_active = last_active_timestamps.get(name.lower(), current_time)
                 idle_seconds = current_time - last_active
-                
-                # If we haven't seen it active and we've been running longer than IDLE_THRESHOLD? 
-                # Actually, 'last_active_timestamps' only populates as we run. 
-                # So if we just started, everything looks like "active just now" because we defaulted to current_time.
-                # This is safe. It means we only kill things that go idle WHILE Zyron is running.
                 
                 if idle_seconds > IDLE_THRESHOLD_SECONDS:
                     # Found a zombie!
@@ -149,9 +144,7 @@ def reaper_loop(callback_func):
     print("🧟 Zombie Reaper: Active and hunting...")
     load_whitelist()
     
-    # INITIALIZATION: Mark all current processes as "active now"
-    # This ensures that background processes start "aging" from this moment.
-    print(f"   [Debug] Initializing process timers...")
+    # Initialize process timers
     start_time = time.time()
     for proc in psutil.process_iter(['name']):
         try:
@@ -159,23 +152,11 @@ def reaper_loop(callback_func):
             if name:
                 last_active_timestamps[name.lower()] = start_time
         except: pass
-    print(f"   [Debug] Tracking {len(last_active_timestamps)} processes.")
     
     while reaper_active:
-        track_foreground_window() # Track frequently
+        track_foreground_window()
         
-        # Check for zombies periodically (every check_interval)
-        # We run the check logic every loop but fast-fail? 
-        # No, let's just sleep short intervals and count ticks or just check time?
-        # Better: Separate tracking from scanning.
-        # For simplicity in this V1: Track every 5s, Scan every 60s.
-        
-        # We'll just sleep 10s here, track, and scan. 
-        # Real idle threshold is hours, so 10s granularity is fine.
-        
-        # DEBUG: Print current check
-        # print(f"   [Debug] Scanning... (Threshold: {RAM_THRESHOLD_MB}MB, {IDLE_THRESHOLD_SECONDS}s)")
-        
+        # Check periodically (scan every iteration of the sleep loop)
         zombies = get_zombies()
         if zombies:
             print(f"   🧟 ZOMBIES FOUND: {[z['name'] for z in zombies]}")

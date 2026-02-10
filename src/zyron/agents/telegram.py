@@ -9,11 +9,11 @@ from zyron.core.brain import process_command
 from zyron.agents.system import execute_command, capture_webcam
 import zyron.features.browser_control as browser_control
 import zyron.core.memory as memory
-import zyron.features.activity as activity_monitor  # Needed to format the output text
-import zyron.features.clipboard as clipboard_monitor  # For clipboard history
-import zyron.features.files.tracker as file_tracker  # <--- NEW IMPORT: THIS STARTS THE FILE TRACKER AUTOMATICALLY
-import zyron.features.focus_mode as focus_mode # <--- Feature #11: Focus Mode
-import zyron.features.zombie_reaper as zombie_reaper # <--- Feature #38: Zombie Process Reaper
+import zyron.features.activity as activity_monitor
+import zyron.features.clipboard as clipboard_monitor
+import zyron.features.files.tracker as file_tracker
+import zyron.features.focus_mode as focus_mode
+import zyron.features.zombie_reaper as zombie_reaper
 from zyron.utils.env_check import check_dependencies
 
 # Run health check before anything else
@@ -23,10 +23,13 @@ load_dotenv()
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 ALLOWED_USERS = os.getenv("ALLOWED_TELEGRAM_USERNAME", "").split(",")
-CHAT_ID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "telegram_chat_id.txt")
+# Store chat ID in saved_media folder for persistence
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+CHAT_ID_FILE = os.path.join(PROJECT_ROOT, "saved_media", "telegram_chat_id.txt")
 
 def save_chat_id(chat_id):
     try:
+        os.makedirs(os.path.dirname(CHAT_ID_FILE), exist_ok=True)
         with open(CHAT_ID_FILE, 'w') as f:
             f.write(str(chat_id))
     except Exception as e:
@@ -48,8 +51,8 @@ if not ALLOWED_USERS or ALLOWED_USERS == ['']: # Check if it's empty or just an 
     print("⚠️ Warning: ALLOWED_TELEGRAM_USERNAME not found in .env file. Bot will be open to everyone!")
     ALLOWED_USERS = []
 else:
-    ALLOWED_USERS = [ALLOWED_USERNAME]
-    print(f"🔒 Security: Only accepting commands from @{ALLOWED_USERNAME}")
+    ALLOWED_USERS = [u.strip() for u in ALLOWED_USERS if u.strip()]
+    print(f"🔒 Security: Only accepting commands from @{', '.join(ALLOWED_USERS)}")
 
 CAMERA_ACTIVE = False
 
@@ -79,11 +82,11 @@ logging.basicConfig(
 )
 
 def get_main_keyboard():
-    # Combined keyboard: Includes old buttons + new "/copied_texts"
+    # Main control keyboard
     keyboard = [
         [KeyboardButton("/screenshot"), KeyboardButton("/camera_on"), KeyboardButton("/camera_off")],
-        [KeyboardButton("🚨 PANIC")], #EMERGENCY PANIC BUTTON (Dedicated Row Panicccc)
-        [KeyboardButton("/sleep"), KeyboardButton("/restart"), KeyboardButton("/shutdown")], # <--- System Controls
+        [KeyboardButton("🚨 PANIC")],
+        [KeyboardButton("/sleep"), KeyboardButton("/restart"), KeyboardButton("/shutdown")],
         [KeyboardButton("/batterypercentage"), KeyboardButton("/systemhealth")],
         [KeyboardButton("/location"), KeyboardButton("/recordaudio")],
         [KeyboardButton("/clear_bin"), KeyboardButton("/storage")], 
@@ -1436,7 +1439,7 @@ if __name__ == "__main__":
         application.add_handler(CommandHandler("start", start_command))
         application.add_handler(CallbackQueryHandler(handle_clipboard_callback, pattern="^copy_"))
         application.add_handler(CallbackQueryHandler(handle_zombie_callback, pattern="^z(kill|allow|ignore)_"))
-        application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+        application.add_handler(MessageHandler(filters.TEXT, handle_message))
         
         # Run
         print("🤖 Bot is pooling...")
@@ -1449,18 +1452,14 @@ if __name__ == "__main__":
             async def post_start(app):
                  start_reaper_task(app.bot, saved_id)
             
-            # Since we can't easily hook into 'post_init' on an already built app without rebuilding,
-            # and rebuilding complicates handler logic, we'll just queue it.
-            # Actually, we can just start it directly if we have the loop.
-            # But the loop starts inside run_polling().
-            # Workaround: Use post_init with a rebuild if saved_id exists.
+            # Re-initialize to attach background task (Workaround for post_init)
             
             application = ApplicationBuilder().token(TOKEN).read_timeout(60).write_timeout(60).post_init(post_start).build()
             # Re-add handlers (builder creates new instance)
             application.add_handler(CommandHandler("start", start_command))
             application.add_handler(CallbackQueryHandler(handle_clipboard_callback, pattern="^copy_"))
             application.add_handler(CallbackQueryHandler(handle_zombie_callback, pattern="^z(kill|allow|ignore)_"))
-            application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+            application.add_handler(MessageHandler(filters.TEXT, handle_message))
 
         application.run_polling()
             
